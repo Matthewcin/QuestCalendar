@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container fade-in">
+        <header>
+            <h1>Mis Hábitos</h1>
+            <p>Construyendo constancia día a día</p>
+        </header>
+
+        <div class="user-stats slide-up">
+            <div class="level-info">
+                <span id="levelDisplay">Nivel 1</span>
+                <span id="xpDisplay">0 / 100 XP</span>
+            </div>
+            <div class="xp-bar-container">
+                <div class="xp-bar" id="xpBar"></div>
+            </div>
+        </div>
+
+        <div class="controls slide-up">
+            <input type="text" id="newHabitInput" placeholder="Nuevo hábito...">
+            <button id="addHabitBtn">Agregar</button>
+        </div>
+
+        <div class="habit-section slide-up">
+            <select id="habitSelect"></select>
+            <button id="deleteHabitBtn">Eliminar Hábito</button>
+        </div>
+
+        <div class="calendar-container pop-in">
+            <div class="month-header">
+                <button id="prevMonth">&lt;</button>
+                <h2 id="monthYearDisplay"></h2>
+                <button id="nextMonth">&gt;</button>
+            </div>
+            <div class="weekdays">
+                <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+            </div>
+            <div class="days-grid" id="daysGrid"></div>
+        </div>
+
+        <div class="achievements-section pop-in">
+            <h3>Tus Insignias</h3>
+            <div class="badges-grid" id="badgesGrid"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
