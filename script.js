@@ -6,86 +6,17 @@ const monthYearDisplay = document.getElementById('monthYearDisplay');
 const daysGrid = document.getElementById('daysGrid');
 const prevMonthBtn = document.getElementById('prevMonth');
 const nextMonthBtn = document.getElementById('nextMonth');
-const levelDisplay = document.getElementById('levelDisplay');
-const xpDisplay = document.getElementById('xpDisplay');
-const xpBar = document.getElementById('xpBar');
-const badgesGrid = document.getElementById('badgesGrid');
 
 let currentDate = new Date();
 let habitsData = JSON.parse(localStorage.getItem('habitsData')) || {};
-let userStats = JSON.parse(localStorage.getItem('userStats')) || { xp: 0, unlockedBadges: [] };
 
 const months = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
 
-const badges = [
-    { id: 'b1', name: 'Semilla', icon: '🌱', check: () => userStats.xp >= 10 },
-    { id: 'b2', name: 'Constante', icon: '🔥', check: () => userStats.xp >= 50 },
-    { id: 'b3', name: 'Estrella', icon: '⭐', check: () => calculateLevel() >= 2 },
-    { id: 'b4', name: 'Imparable', icon: '🚀', check: () => userStats.xp >= 200 },
-    { id: 'b5', name: 'Maestro', icon: '👑', check: () => userStats.xp >= 500 }
-];
-
 function saveToLocalStorage() {
     localStorage.setItem('habitsData', JSON.stringify(habitsData));
-    localStorage.setItem('userStats', JSON.stringify(userStats));
-}
-
-function calculateLevel() {
-    return Math.floor(userStats.xp / 100) + 1;
-}
-
-function updateStatsUI() {
-    const level = calculateLevel();
-    const xpInCurrentLevel = userStats.xp % 100;
-    
-    levelDisplay.textContent = `Nivel ${level}`;
-    xpDisplay.textContent = `${xpInCurrentLevel} / 100 XP`;
-    xpBar.style.width = `${xpInCurrentLevel}%`;
-    
-    checkBadges();
-    renderBadges();
-}
-
-function updateXP(amount) {
-    userStats.xp += amount;
-    if (userStats.xp < 0) userStats.xp = 0;
-    saveToLocalStorage();
-    updateStatsUI();
-}
-
-function checkBadges() {
-    badges.forEach(badge => {
-        if (badge.check() && !userStats.unlockedBadges.includes(badge.id)) {
-            userStats.unlockedBadges.push(badge.id);
-            saveToLocalStorage();
-        }
-    });
-}
-
-function renderBadges() {
-    badgesGrid.innerHTML = '';
-    badges.forEach(badge => {
-        const badgeDiv = document.createElement('div');
-        badgeDiv.classList.add('badge');
-        if (userStats.unlockedBadges.includes(badge.id)) {
-            badgeDiv.classList.add('unlocked');
-        }
-        
-        const iconSpan = document.createElement('span');
-        iconSpan.classList.add('badge-icon');
-        iconSpan.textContent = badge.icon;
-        
-        const nameSpan = document.createElement('span');
-        nameSpan.classList.add('badge-name');
-        nameSpan.textContent = badge.name;
-        
-        badgeDiv.appendChild(iconSpan);
-        badgeDiv.appendChild(nameSpan);
-        badgesGrid.appendChild(badgeDiv);
-    });
 }
 
 function updateHabitSelect() {
@@ -166,12 +97,12 @@ function toggleHabitDay(habit, dateKey, element) {
     if (index > -1) {
         habitsData[habit].splice(index, 1);
         element.classList.remove('completed');
-        updateXP(-10);
     } else {
         habitsData[habit].push(dateKey);
         element.classList.add('completed');
-        updateXP(10);
     }
+
+    saveToLocalStorage();
 }
 
 addHabitBtn.addEventListener('click', () => {
@@ -208,4 +139,3 @@ nextMonthBtn.addEventListener('click', () => {
 });
 
 updateHabitSelect();
-updateStatsUI();
