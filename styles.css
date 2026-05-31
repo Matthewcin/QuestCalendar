@@ -9,7 +9,6 @@
     --danger-color: #ef4444;
     --day-bg: #334155;
     --day-hover: #475569;
-    --gold-color: #fbbf24;
 }
 
 * {
@@ -40,7 +39,7 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 header h1 {
@@ -55,35 +54,6 @@ header p {
     color: var(--text-secondary);
     font-size: 0.95rem;
     margin-top: 5px;
-}
-
-.user-stats {
-    background-color: var(--day-bg);
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-}
-
-.level-info {
-    display: flex;
-    justify-content: space-between;
-    font-weight: 600;
-    margin-bottom: 10px;
-    font-size: 0.95rem;
-}
-
-.xp-bar-container {
-    height: 10px;
-    background-color: var(--bg-color);
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.xp-bar {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--success-color), var(--accent-color));
-    transition: width 0.5s ease;
 }
 
 .controls, .habit-section {
@@ -207,59 +177,6 @@ button:active {
 
 .day.empty:hover {
     transform: none;
-}
-
-.achievements-section {
-    margin-top: 35px;
-    padding-top: 25px;
-    border-top: 1px solid var(--day-bg);
-}
-
-.achievements-section h3 {
-    text-align: center;
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    color: var(--text-secondary);
-}
-
-.badges-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-    gap: 15px;
-}
-
-.badge {
-    background-color: var(--bg-color);
-    border: 2px solid var(--day-bg);
-    border-radius: 12px;
-    padding: 10px 5px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    opacity: 0.4;
-    filter: grayscale(100%);
-    transition: all 0.4s ease;
-}
-
-.badge.unlocked {
-    opacity: 1;
-    filter: grayscale(0%);
-    border-color: var(--gold-color);
-    box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-    transform: translateY(-3px);
-}
-
-.badge-icon {
-    font-size: 1.8rem;
-}
-
-.badge-name {
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-align: center;
-    color: var(--text-primary);
-    text-transform: uppercase;
 }
 
 @keyframes fadeIn {
