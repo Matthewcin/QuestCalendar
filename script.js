@@ -1,3 +1,19 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCsg7Xc3L5Wt7YmNnp22UUqJea_jc5Wl9I",
+    authDomain: "questcalendardb.firebaseapp.com",
+    databaseURL: "https://questcalendardb-default-rtdb.firebaseio.com",
+    projectId: "questcalendardb",
+    storageBucket: "questcalendardb.firebasestorage.app",
+    messagingSenderId: "149613029357",
+    appId: "1:149613029357:web:4708664746b96c1ce7a9e4"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
 const habitSelect = document.getElementById('habitSelect');
 const newHabitInput = document.getElementById('newHabitInput');
 const addHabitBtn = document.getElementById('addHabitBtn');
@@ -6,20 +22,115 @@ const monthYearDisplay = document.getElementById('monthYearDisplay');
 const daysGrid = document.getElementById('daysGrid');
 const prevMonthBtn = document.getElementById('prevMonth');
 const nextMonthBtn = document.getElementById('nextMonth');
+const levelDisplay = document.getElementById('levelDisplay');
+const xpDisplay = document.getElementById('xpDisplay');
+const xpBar = document.getElementById('xpBar');
+const badgesGrid = document.getElementById('badgesGrid');
 
 let currentDate = new Date();
-let habitsData = JSON.parse(localStorage.getItem('habitsData')) || {};
+let habitsData = {};
+let userStats = { xp: 0, unlockedBadges: [] };
+let isDataLoaded = false;
 
 const months = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
 
-function saveToLocalStorage() {
-    localStorage.setItem('habitsData', JSON.stringify(habitsData));
+const badges = [
+    { id: 'b1', name: 'Semilla', icon: '🌱', check: () => userStats.xp >= 10 },
+    { id: 'b2', name: 'Constante', icon: '🔥', check: () => userStats.xp >= 50 },
+    { id: 'b3', name: 'Estrella', icon: '⭐', check: () => calculateLevel() >= 2 },
+    { id: 'b4', name: 'Imparable', icon: '🚀', check: () => userStats.xp >= 200 },
+    { id: 'b5', name: 'Maestro', icon: '👑', check: () => userStats.xp >= 500 }
+];
+
+const dataRef = ref(db, 'trackerData');
+
+onValue(dataRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+        habitsData = data.habitsData || {};
+        userStats = data.userStats || { xp: 0, unlockedBadges: [] };
+    } else {
+        habitsData = {};
+        userStats = { xp: 0, unlockedBadges: [] };
+    }
+    isDataLoaded = true;
+    updateHabitSelect();
+    updateStatsUI();
+});
+
+function saveToServer() {
+    set(ref(db, 'trackerData'), {
+        habitsData: habitsData,
+        userStats: userStats
+    });
+}
+
+function calculateLevel() {
+    return Math.floor(userStats.xp / 100) + 1;
+}
+
+function updateStatsUI() {
+    if (!isDataLoaded) return;
+    const level = calculateLevel();
+    const xpInCurrentLevel = userStats.xp % 100;
+    
+    levelDisplay.textContent = `Nivel ${level}`;
+    xpDisplay.textContent = `${xpInCurrentLevel} / 100 XP`;
+    xpBar.style.width = `${xpInCurrentLevel}%`;
+    
+    checkBadges();
+    renderBadges();
+}
+
+function checkBadges() {
+    let newBadgeUnlocked = false;
+    if (!userStats.unlockedBadges) {
+        userStats.unlockedBadges = [];
+    }
+    badges.forEach(badge => {
+        if (badge.check() && !userStats.unlockedBadges.includes(badge.id)) {
+            userStats.unlockedBadges.push(badge.id);
+            newBadgeUnlocked = true;
+        }
+    });
+    
+    if (newBadgeUnlocked) {
+        saveToServer();
+    }
+}
+
+function renderBadges() {
+    badgesGrid.innerHTML = '';
+    if (!userStats.unlockedBadges) {
+        userStats.unlockedBadges = [];
+    }
+    badges.forEach(badge => {
+        const badgeDiv = document.createElement('div');
+        badgeDiv.classList.add('badge');
+        if (userStats.unlockedBadges.includes(badge.id)) {
+            badgeDiv.classList.add('unlocked');
+        }
+        
+        const iconSpan = document.createElement('span');
+        iconSpan.classList.add('badge-icon');
+        iconSpan.textContent = badge.icon;
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.classList.add('badge-name');
+        nameSpan.textContent = badge.name;
+        
+        badgeDiv.appendChild(iconSpan);
+        badgeDiv.appendChild(nameSpan);
+        badgesGrid.appendChild(badgeDiv);
+    });
 }
 
 function updateHabitSelect() {
+    if (!isDataLoaded) return;
+    const currentSelection = habitSelect.value;
     habitSelect.innerHTML = '';
     const habits = Object.keys(habitsData);
 
@@ -45,10 +156,17 @@ function updateHabitSelect() {
         habitSelect.appendChild(option);
     });
 
+    if (currentSelection && habits.includes(currentSelection)) {
+        habitSelect.value = currentSelection;
+    } else {
+        habitSelect.value = habits[0];
+    }
+
     renderCalendar();
 }
 
 function renderCalendar() {
+    if (!isDataLoaded) return;
     daysGrid.innerHTML = '';
     const currentHabit = habitSelect.value;
 
@@ -97,12 +215,16 @@ function toggleHabitDay(habit, dateKey, element) {
     if (index > -1) {
         habitsData[habit].splice(index, 1);
         element.classList.remove('completed');
+        userStats.xp -= 10;
     } else {
         habitsData[habit].push(dateKey);
         element.classList.add('completed');
+        userStats.xp += 10;
     }
 
-    saveToLocalStorage();
+    if (userStats.xp < 0) userStats.xp = 0;
+
+    saveToServer();
 }
 
 addHabitBtn.addEventListener('click', () => {
@@ -110,7 +232,7 @@ addHabitBtn.addEventListener('click', () => {
     if (newHabit && !habitsData[newHabit]) {
         habitsData[newHabit] = [];
         newHabitInput.value = '';
-        saveToLocalStorage();
+        saveToServer();
         updateHabitSelect();
         habitSelect.value = newHabit;
         renderCalendar();
@@ -121,8 +243,7 @@ deleteHabitBtn.addEventListener('click', () => {
     const currentHabit = habitSelect.value;
     if (currentHabit && confirm(`¿Seguro que quieres eliminar el hábito "${currentHabit}" y todo su progreso?`)) {
         delete habitsData[currentHabit];
-        saveToLocalStorage();
-        updateHabitSelect();
+        saveToServer();
     }
 });
 
@@ -137,5 +258,3 @@ nextMonthBtn.addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() + 1);
     renderCalendar();
 });
-
-updateHabitSelect();
